@@ -6,58 +6,71 @@ Con todo lo que hablamos, aquí te armo un **PRD (Product Requirements Document)
 
 ---
 
-**Super Mario Shout Run**
-
-## 1. Objetivo del producto
-
-Crear un videojuego runner inspirado en *Geometry Dash* y *Super Mario Bros*, donde el personaje se mueve automáticamente y el jugador controla la acción mediante dos entradas innovadoras del **Arduino Esplora**:
-
-* **Sensor de luz** → control de salto.
-* **Micrófono** → activación de poderes de ataque.
-
-El objetivo es ofrecer una experiencia de juego accesible, divertida y diferente, integrando mecánicas físicas (luz + voz) con la dinámica clásica de Mario.
+Perfecto 🚀. Te ajusto el PRD con esa precisión técnica, manteniendo las 5 secciones que pediste:
 
 ---
 
-## 2. Usuarios objetivo
+# **PRD – Super Mario Shout Run**
 
-* **Jugadores casuales**: buscan una experiencia rápida y entretenida.
-* **Entusiastas de Arduino**: interesados en probar un control alternativo.
-* **Estudiantes y makers**: personas que quieren explorar la interacción física en videojuegos.
+## 1. Descripción del Producto
 
----
+**Super Mario Shout Run** es un videojuego estilo *runner* inspirado en Mario Bros y Geometry Dash. El personaje se desplaza automáticamente hacia adelante en escenarios con obstáculos, y el jugador debe controlarlo con **dos tipos de interacciones**:
 
-## 3. Funcionalidades principales
-
-* **Movimiento automático**: Mario corre de forma continua.
-* **Salto (sensor de luz)**: al iluminar o tapar el sensor, Mario salta obstáculos.
-* **Ataque (micrófono)**: al superar un umbral de volumen, Mario lanza un poder (ej. bola de fuego).
-* **HUD minimalista**: puntaje en pantalla, vidas y estado de poder.
-* **Progresión de niveles**: aumento de velocidad y aparición de enemigos que requieren el uso de voz.
+* **Sensor de luz (Arduino Esplora):** Detecta variaciones de luz para ejecutar saltos.
+* **Micrófono (Arduino Esplora):** Reconoce picos de volumen de la voz para activar ataques especiales de Mario.
 
 ---
 
-## 4. Requisitos técnicos
+## 2. Objetivos del Proyecto
 
-* **Hardware**: Arduino Esplora conectado por USB.
-* **Sensores usados**:
-
-  * Sensor de luz (salto).
-  * Micrófono (ataque por voz).
-* **Interfaz con PC**: el Arduino emula un teclado →
-
-  * Barra espaciadora = salto.
-  * Tecla “X” = ataque.
-* **Juego en PC**: desarrollado en un motor como Unity, Godot o Processing, que interprete las teclas enviadas.
+* Diseñar un videojuego jugable desde el navegador.
+* Integrar el **Arduino Esplora** como control principal.
+* Permitir una jugabilidad intuitiva y divertida, con dos mecánicas simples: **saltar** y **atacar**.
+* Innovar al combinar hardware físico con interacción por voz y luz.
 
 ---
 
-## 5. Experiencia de usuario (UX)
+## 3. Alcance y Funcionalidades
 
-* **Feedback inmediato**:
+* Mario corre automáticamente, evitando obstáculos al **detectar un cambio de luz**.
+* Mario activa un **ataque especial (fuego, golpe, etc.) al reconocer un grito o sonido fuerte**.
+* El sistema debe poder recibir datos desde el **Arduino Esplora conectado a un puerto COM** (ejemplo: COM12).
+* Requiere un flujo de comunicación:
 
-  * Al saltar → Mario brilla.
-  * Al atacar → efecto de voz + animación de poder.
-* **Simplicidad**: solo dos acciones (saltar + atacar) fáciles de aprender.
-* **Dificultad progresiva**: al inicio solo saltar, luego integrar poderes obligatorios para avanzar.
-* **Inmersión física**: el jugador siente que su **voz y la luz real** tienen un impacto directo en el juego.
+  1. **Arduino Esplora → COM12**
+  2. **p5.serialport (cliente navegador)** → encargado de comunicarse con el servidor.
+  3. **Servidor intermedio Node.js** → procesa los datos recibidos y los transmite al navegador vía WebSockets.
+
+---
+
+## 4. Requisitos Técnicos
+
+* **Hardware:**
+
+  * Arduino Esplora con sensores de luz y micrófono.
+  * Conexión USB al PC (ejemplo: COM12).
+
+* **Software:**
+
+  * **Node.js** como servidor intermedio.
+  * **p5.serialport** para comunicación entre el Arduino y el navegador.
+  * **p5.js** para el motor gráfico del juego en el navegador.
+
+* **Comunicación:**
+
+  * Protocolo basado en mensajes seriales JSON.
+  * Ejemplo:
+
+    ```json
+    { "sensor": "luz", "valor": 320 }  
+    { "sensor": "microfono", "valor": 870 }
+    ```
+
+---
+
+## 5. Criterios de Éxito
+
+* El juego corre en navegador y responde a los datos enviados desde Arduino Esplora.
+* Los saltos se producen de forma fluida al variar la luz.
+* Los ataques se activan con gritos o sonidos fuertes.
+* La comunicación entre **Arduino → COM12 → Node.js → navegador** es estable y en tiempo real.
