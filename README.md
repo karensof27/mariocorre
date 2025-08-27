@@ -4,12 +4,6 @@ juego interactivo de mario que funciona con arduino esplora
 ¡Perfecto, Sofi! 🙌
 Con todo lo que hablamos, aquí te armo un **PRD (Product Requirements Document)** súper enfocado en tu juego **Super Mario Shout Run**, limitado a **máx. 5 secciones** y usando **solo los dos sensores que definimos: luz + voz (micrófono)**.
 
----
-
-Perfecto 🚀. Te ajusto el PRD con esa precisión técnica, manteniendo las 5 secciones que pediste:
-
----
-
 # **PRD – Super Mario Shout Run**
 
 ## 1. Descripción del Producto
