@@ -93,17 +93,19 @@ function updateGame() {
     gameState.score++;
 }
 
-// Procesar datos de los sensores
+// Procesar datos reales de los sensores
 function processSensorInput() {
-    // Simular recepción de datos de sensores (esto vendría del puerto serie)
-    // En una implementación real, estos datos vendrían del Arduino
+    // Procesar sensor de luz para salto
     if (gameState.sensorData.light < LIGHT_THRESHOLD && !mario.isJumping) {
         mario.velocityY = JUMP_FORCE;
         mario.isJumping = true;
+        console.log('Salto detectado - Valor de luz:', gameState.sensorData.light);
     }
     
+    // Procesar micrófono para ataque
     if (gameState.sensorData.mic > MIC_THRESHOLD) {
         mario.isAttacking = true;
+        console.log('Ataque detectado - Valor de micrófono:', gameState.sensorData.mic);
         setTimeout(() => mario.isAttacking = false, 500);
     }
 }
@@ -290,9 +292,27 @@ function drawPlayer() {
     pop();
 }
 
-// Simulación de datos de sensores (en implementación real, esto vendría del Arduino)
-setInterval(() => {
-    // Simular cambios en los sensores
-    gameState.sensorData.light = random(0, 1000);
-    gameState.sensorData.mic = random(0, 1000);
-}, 100);
+// WebSocket para recibir datos reales de los sensores
+let socket = new WebSocket('ws://localhost:3000');
+
+socket.onopen = () => {
+    console.log('Conectado al servidor WebSocket');
+};
+
+socket.onmessage = (event) => {
+    try {
+        const data = JSON.parse(event.data);
+        gameState.sensorData.light = data.light;
+        gameState.sensorData.mic = data.mic;
+    } catch (error) {
+        console.error('Error al procesar datos del sensor:', error);
+    }
+};
+
+socket.onerror = (error) => {
+    console.error('Error en WebSocket:', error);
+};
+
+socket.onclose = () => {
+    console.log('Conexión WebSocket cerrada');
+};
