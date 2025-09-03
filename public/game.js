@@ -20,6 +20,26 @@ const LIGHT_THRESHOLD = 200;
 const MIC_THRESHOLD = 600;
 
 // Variables del juego
+let serial;
+let portName = 'COM12'; // Ajusta según tu puerto
+
+// Estructura para almacenar datos de los sensores
+let sensorData = {
+    joystickX: 0,
+    joystickY: 0,
+    light: 500,
+    temperature: 0,
+    slider: 0,
+    microphone: 0,
+    accelX: 0,
+    accelY: 0,
+    accelZ: 0,
+    button1: 0,
+    button2: 0,
+    button3: 0,
+    button4: 0
+};
+
 let mario = {
     x: 100,
     y: GROUND_HEIGHT - MARIO_HEIGHT,
@@ -30,11 +50,7 @@ let mario = {
 
 let gameState = {
     score: 0,
-    obstacles: [],
-    sensorData: {
-        light: 500,    // Valor inicial del sensor de luz
-        mic: 0         // Valor inicial del micrófono
-    }
+    obstacles: []
 };
 
 // Precargar recursos
@@ -48,6 +64,57 @@ function setup() {
     let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     canvas.parent('game-container');
     frameRate(60);
+
+    // Inicializar comunicación serial
+    serial = new p5.SerialPort();
+    
+    // Callbacks para el puerto serial
+    serial.on('list', gotList);
+    serial.on('data', gotData);
+    serial.on('error', gotError);
+    serial.on('connected', gotConnected);
+    
+    // Abrir el puerto serial
+    serial.open(portName);
+}
+
+// Lista de puertos disponibles
+function gotList(thelist) {
+    console.log("Puertos serie disponibles:");
+    console.log(thelist);
+}
+
+// Conexión exitosa
+function gotConnected() {
+    console.log("Puerto serie conectado");
+}
+
+// Error en puerto serie
+function gotError(theerror) {
+    console.error(theerror);
+}
+
+// Recepción de datos seriales
+function gotData() {
+    let rawData = serial.readStringUntil('\\n');
+    if (rawData.length > 0) {
+        let values = rawData.trim().split(',');
+        if (values.length === 13) { // Asegurarse de que tenemos todos los valores
+            sensorData.joystickX = parseInt(values[0]);
+            sensorData.joystickY = parseInt(values[1]);
+            sensorData.light = parseInt(values[2]);
+            sensorData.temperature = parseInt(values[3]);
+            sensorData.slider = parseInt(values[4]);
+            sensorData.microphone = parseInt(values[5]);
+            sensorData.accelX = parseInt(values[6]);
+            sensorData.accelY = parseInt(values[7]);
+            sensorData.accelZ = parseInt(values[8]);
+            sensorData.button1 = parseInt(values[9]);
+            sensorData.button2 = parseInt(values[10]);
+            sensorData.button3 = parseInt(values[11]);
+            sensorData.button4 = parseInt(values[12]);
+        }
+    }
 
     // Inicializar frames de animación
     setupPlayerAnimation();
@@ -93,21 +160,24 @@ function updateGame() {
     gameState.score++;
 }
 
-// Procesar datos reales de los sensores
+// Procesar datos de los sensores
 function processSensorInput() {
     // Procesar sensor de luz para salto
-    if (gameState.sensorData.light < LIGHT_THRESHOLD && !mario.isJumping) {
+    if (sensorData.light < LIGHT_THRESHOLD && !mario.isJumping) {
         mario.velocityY = JUMP_FORCE;
         mario.isJumping = true;
-        console.log('Salto detectado - Valor de luz:', gameState.sensorData.light);
+        console.log('Salto detectado - Valor de luz:', sensorData.light);
     }
     
     // Procesar micrófono para ataque
-    if (gameState.sensorData.mic > MIC_THRESHOLD) {
+    if (sensorData.microphone > MIC_THRESHOLD) {
         mario.isAttacking = true;
-        console.log('Ataque detectado - Valor de micrófono:', gameState.sensorData.mic);
+        console.log('Ataque detectado - Valor de micrófono:', sensorData.microphone);
         setTimeout(() => mario.isAttacking = false, 500);
     }
+    
+    // Debug panel
+    updateDebugPanel();
 }
 
 // Actualizar posición y estado de Mario
@@ -194,8 +264,29 @@ function drawGame() {
 
 // Actualizar panel de debug con valores de sensores
 function updateDebugPanel() {
-    document.getElementById('light-value').textContent = gameState.sensorData.light;
-    document.getElementById('mic-value').textContent = gameState.sensorData.mic;
+    document.getElementById('light-value').textContent = sensorData.light;
+    document.getElementById('mic-value').textContent = sensorData.microphone;
+    
+    // Mostrar valores adicionales en el panel de debug
+    let debugInfo = `
+        Joystick X: ${sensorData.joystickX}
+        Joystick Y: ${sensorData.joystickY}
+        Luz: ${sensorData.light}
+        Temperatura: ${sensorData.temperature}
+        Slider: ${sensorData.slider}
+        Micrófono: ${sensorData.microphone}
+        Accel X: ${sensorData.accelX}
+        Accel Y: ${sensorData.accelY}
+        Accel Z: ${sensorData.accelZ}
+        Botón 1: ${sensorData.button1}
+        Botón 2: ${sensorData.button2}
+        Botón 3: ${sensorData.button3}
+        Botón 4: ${sensorData.button4}
+    `;
+    
+    fill(255);
+    textSize(12);
+    text(debugInfo, 10, 100);
 }
 
 // Reiniciar juego
